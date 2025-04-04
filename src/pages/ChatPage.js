@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import "./ChatPage.css";
-
 import ChatHeader from './ChatHeader';
 import ReactMarkdown from 'react-markdown';
 
@@ -17,27 +16,31 @@ const ChatPage = () => {
             setIsTyping(true);
 
             try {
-                const response = await fetch('http://localhost:3001/api/addtext', {
+                const response = await fetch('http://localhost:3001/api/ask', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ prompt: input }),
+                    body: JSON.stringify({ question: input }),
                 });
 
                 const data = await response.json();
-                const gptResponse = data.response;
-
-                console.log(`Received response: ${gptResponse}`);
+                if (!data.success) {
+                    throw new Error(data.message);
+                }
 
                 setIsTyping(false);
                 setMessages(prevMessages => [
                     ...prevMessages,
-                    { user: 'GPT', text: gptResponse }
+                    { user: 'Teacher', text: data.response }
                 ]);
             } catch (error) {
                 console.error('Error:', error);
                 setIsTyping(false);
+                setMessages(prevMessages => [
+                    ...prevMessages,
+                    { user: 'System', text: 'Sorry, there was an error processing your request.' }
+                ]);
             }
         }
     };
@@ -63,7 +66,7 @@ const ChatPage = () => {
                 {messages.map((msg, index) => (
                     <div key={index} className={`chat-message ${msg.user}`}>
                         <div className="message-content">
-                            {msg.user === 'GPT' ? (
+                            {msg.user === 'Teacher' ? (
                                 <ReactMarkdown>{msg.text}</ReactMarkdown>
                             ) : (
                                 <div>{msg.text}</div>
@@ -72,7 +75,7 @@ const ChatPage = () => {
                     </div>
                 ))}
                 {isTyping && (
-                    <div className="chat-message GPT typing">
+                    <div className="chat-message Teacher typing">
                         <div className="message-content">
                             <span className="dot"></span>
                             <span className="dot"></span>
@@ -88,7 +91,7 @@ const ChatPage = () => {
                     value={input} 
                     onChange={(e) => setInput(e.target.value)} 
                     onKeyDown={handleKeyDown} 
-                    placeholder="Type your message here..." 
+                    placeholder="Ask your physics question..." 
                 />
                 <button onClick={handleSend}>Send</button>
             </div>
