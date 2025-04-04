@@ -16,7 +16,7 @@ const ChatPage = () => {
             setIsTyping(true);
 
             try {
-                const response = await fetch('http://localhost:3001/api/ask', {
+                const response = await fetch('https://cosmetics-chatbot-backend.onrender.com/api/ask', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
